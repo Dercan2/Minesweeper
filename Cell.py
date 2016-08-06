@@ -1,5 +1,7 @@
 from GameField import GameField
 
+MINE_SIGNATURE = 99
+
 
 # Ячейка игрового поля.
 class Cell:
