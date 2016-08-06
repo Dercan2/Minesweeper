@@ -1,4 +1,5 @@
 from Cell import Cell
+from Cell import MINE_SIGNATURE
 
 
 # Абстрактное игровое поле. Отображает знания бота о текущей игре.
@@ -19,22 +20,21 @@ class GameField:
 
     # Представляет игровое поле в тектовом виде.
     def __str__(self, show_considered = False):
-        MARK_SYMBOL = 'M'
-        CLOSED_SYMBOL = '#'
-        CONSIDERED_SYMBOL = 'c'
         symbols_in_row = self.width + 1
         symbols_amount = symbols_in_row * self.height - 1
         list_of_symbols = ['\n' for i in range(symbols_amount)]
         for y in range(self.height):
             for x in range(self.width):
                 cell = self[y, x]
-                symbol = CLOSED_SYMBOL
+                symbol = GameField.CLOSED_SYMBOL
                 if show_considered and cell.opened and cell.considered:
-                    symbol = CONSIDERED_SYMBOL
-                elif cell.opened:
+                    symbol = GameField.CONSIDERED_SYMBOL
+                elif cell.opened and cell.mines_around != MINE_SIGNATURE:
                     symbol = str(cell.mines_around)
+                elif cell.opened and cell.mines_around == MINE_SIGNATURE:
+                    symbol = str(GameField.MINE_SYMBOL)
                 elif cell.marked:
-                    symbol = MARK_SYMBOL
+                    symbol = GameField.MARK_SYMBOL
                 index = symbols_in_row * y + x
                 list_of_symbols[index] = symbol
         return ''.join(list_of_symbols)
@@ -57,3 +57,9 @@ class GameField:
 
     def __iter__(self):
         return GameField.Iterator(self)
+
+
+GameField.MARK_SYMBOL = 'M'
+GameField.CLOSED_SYMBOL = '#'
+GameField.CONSIDERED_SYMBOL = 'c'
+GameField.MINE_SYMBOL = '*'

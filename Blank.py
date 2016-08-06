@@ -3,13 +3,13 @@ from Cell import MINE_SIGNATURE
 
 
 # Класс-источник заранее сгенерированного поля. Предназначен для тестов.
-class PreparedField:
+class Blank:
     def __init__(self, height=16, width=30, mines=99):
         self.width = width
         self.height = height
         self.mines = mines
         # Булевский двумерный массив. True - есть бомба.
-        self.sheet = [ [bool() for j in range(width)] for i in range(height) ]
+        self.sheet = [ [bool(False) for j in range(width)] for i in range(height) ]
         mines = self.mines
         # Случайным образом расставляет мины.
         random.seed()
@@ -20,6 +20,10 @@ class PreparedField:
                 self.sheet[y][x] = True
                 mines -= 1
 
+    # Возвращает высоту и ширину.
+    def get_dimensions(self):
+        return (self.height, self.width)
+
     # Открывает клетку и возвращает либо число мин вокруг, либо MINE_SIGNATURE
     def open(self, y, x):
         value = self.sheet[y][x]
@@ -27,6 +31,10 @@ class PreparedField:
             return MINE_SIGNATURE
         else:
             return self.calculate_mines_around(y, x)
+
+    # Помечает клетку как содержащую мину.
+    def mark(self, y, x):
+        pass
 
     # Возвращает количество мин вокруг данной клетки.
     def calculate_mines_around(self, y, x):

@@ -1,5 +1,3 @@
-from GameField import GameField
-
 MINE_SIGNATURE = 99
 
 
@@ -26,12 +24,14 @@ class Cell:
 
     # Открывает клетку.
     def open(self):
-        pass
+        self.opened = True
+        outcome = self.field.source.open(self.y, self.x)
+        self.mines_around = outcome
 
     # Помечает клетку как содержащую мину.
     def mark(self):
         self.considered = self.marked = True
-        pass
+        self.field.source.mark(self.y, self.x)
 
     # Возвращает множество клеток вокруг текущей.
     # Можно задать дополнительные условия ждя отсева.
