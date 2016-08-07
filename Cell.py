@@ -26,16 +26,20 @@ class Cell:
     def open(self):
         self.opened = True
         outcome = self.field.source.open(self.y, self.x)
-        self.mines_around = outcome
+        if outcome != MINE_SIGNATURE:
+            self.mines_around = outcome
+        else:
+            self.marked = self.considered = True
 
     # Помечает клетку как содержащую мину.
     def mark(self):
-        self.considered = self.marked = True
-        self.field.source.mark(self.y, self.x)
+        if not self.marked:
+            self.considered = self.marked = True
+            self.field.source.mark(self.y, self.x)
 
     # Возвращает множество клеток вокруг текущей.
     # Можно задать дополнительные условия ждя отсева.
-    def cells_around(self, opened = None, marked = None, considered = None):
+    def cells_around(self, opened=None, marked=None, considered=None):
         result = set()
         for offset_y in (-1, 0, 1):
             for offset_x in (-1, 0, 1):

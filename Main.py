@@ -12,7 +12,7 @@ while True:
     if command == 'r':
         bot.random_open()
     elif command == 's':
-        while bot.smart_open() or bot.consider():
+        while bot.smart_open() or bot.consider(0, False):
             pass
     else:
         print('unknown command')

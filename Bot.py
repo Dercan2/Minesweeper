@@ -39,12 +39,14 @@ class Bot:
     # False - таких нет.
     # Если не удалось рассмотреть нужное число клеток - выбрасывает NothingToConsider.
     def consider(self, amount=0, raise_exception=True):
+        # Содержит ли to_consider хотя бы один элемент.
         if not self.to_consider:
             if raise_exception:
                 raise NothingToConsider
             else:
                 return False
         considered = 0
+        # Перебирание amount элементов.
         while self.to_consider:
             cell = next(iter(self.to_consider))
             # Если вокруг столько же закрытых клеток, сколько и бомб.
