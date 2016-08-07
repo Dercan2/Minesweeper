@@ -1,4 +1,4 @@
-MINE_SIGNATURE = 99
+from General import BombOpened, MINE_SIGNATURE
 
 
 # Ячейка игрового поля.
@@ -29,7 +29,7 @@ class Cell:
         if outcome != MINE_SIGNATURE:
             self.mines_around = outcome
         else:
-            self.marked = self.considered = True
+            raise BombOpened
 
     # Помечает клетку как содержащую мину.
     def mark(self):

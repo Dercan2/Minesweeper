@@ -1,5 +1,5 @@
 import random
-from Cell import MINE_SIGNATURE
+from General import MINE_SIGNATURE
 
 
 # Класс-источник заранее сгенерированного поля. Предназначен для тестов.
@@ -22,7 +22,7 @@ class Blank:
 
     # Возвращает высоту и ширину.
     def get_dimensions(self):
-        return (self.height, self.width)
+        return self.height, self.width
 
     # Открывает клетку и возвращает либо число мин вокруг, либо MINE_SIGNATURE
     def open(self, y, x):

@@ -1,9 +1,18 @@
 # Файл игры содержит описание source класса - Combatant. Класс работает с действующей игрой.
+import time
 from ctypes import Structure, wintypes, byref, windll
+from PIL import ImageGrab
+from General import NoGameError, MINE_SIGNATURE
 
+# Основные константы для работы с окном игры; получены эмпирическим путем.
+# Размер ячейки игрового поля.
 CELL_SIZE = 16
-GAME_FIELD_OFFSET_X = 20
-GAME_FIELD_OFFSET_Y = 105
+# Смещение первой ячейки относительно начала окна.
+GAME_FIELD_OFFSET_X = 15
+GAME_FIELD_OFFSET_Y = 100
+# Пространство, занимаемое не ячейками поля.
+NON_GAME_REGION_WIDTH = 26
+NON_GAME_REGION_HEIGHT = 111
 
 
 # Объект-источник, который получает информацию из Сапер.exe
@@ -12,7 +21,7 @@ class Combatant:
         # Получение хэндла.
         handle = windll.user32.FindWindowW(0, 'Сапер')
         if handle == 0:
-            raise RuntimeError('Не удалось найти окно сапера.')
+            raise NoGameError
         # Получение параметров окна.
         self.window = RECT()
         windll.user32.GetWindowRect(handle, byref(self.window))
@@ -29,6 +38,40 @@ class Combatant:
         game_x = (screen_x - self.window.x - GAME_FIELD_OFFSET_X) // CELL_SIZE
         return game_y, game_x
 
+    # Возвращает высоту и ширину.
+    def get_dimensions(self):
+        rows = (self.window.height - NON_GAME_REGION_HEIGHT) // CELL_SIZE
+        columns = (self.window.width - NON_GAME_REGION_WIDTH) // CELL_SIZE
+        return rows, columns
+    dimensions = property(get_dimensions)
+
+    # Открывает клетку и возвращает либо число мин вокруг, либо MINE_SIGNATURE
+    def open(self, y, x):
+        # Проверка на наличие игры.
+        handle = windll.user32.FindWindowW(0, 'Сапер')
+        if handle == 0:
+            raise NoGameError
+        y, x = self.game_coordinates_to_screen(y, x)
+        windll.user32.SetCursorPos(x, y)
+        windll.user32.mouse_event(2, 0, 0, 0,0)
+        windll.user32.mouse_event(4, 0, 0, 0,0)
+        windll.user32.mouse_event(2, 0, 0, 0,0)
+        windll.user32.mouse_event(4, 0, 0, 0,0)
+        box = x, y, x + CELL_SIZE, y + CELL_SIZE
+        screen = ImageGrab.grab(box)
+        return define_cell(screen)
+
+    # Помечает клетку как содержащую мину.
+    def mark(self, y, x):
+        # Проверка на наличие игры.
+        handle = windll.user32.FindWindowW(0, 'Сапер')
+        if handle == 0:
+            raise NoGameError
+        y, x = self.game_coordinates_to_screen(y, x)
+        windll.user32.SetCursorPos(x, y)
+        windll.user32.mouse_event(8, 0, 0, 0,0)
+        windll.user32.mouse_event(10, 0, 0, 0,0)
+
 
 # Класс, необходимый для получения данных об окне.
 class RECT(Structure):
@@ -43,3 +86,41 @@ class RECT(Structure):
     y = property(lambda self: self.top)
     width = property(lambda self: self.right-self.left)
     height = property(lambda self: self.bottom-self.top)
+
+
+# Распознает клетку по картинке 16х16. В случае бомбы возвращает MINE_SIGNATURE.
+def define_cell(image):
+    buffer = image.load()
+    color = buffer[9, 12]
+    extra_color = buffer[1, 1]
+    if nearly(color, (0, 0, 255)):
+        return 1
+    elif nearly(color, (0, 123, 0)):
+        return 2
+    elif nearly(color, (255, 0, 0)):
+        return 3
+    elif nearly(color, (0, 0, 123)):
+        return 4
+    elif nearly(color, (123, 0, 0)):
+        return 5
+    elif nearly(color, (0, 123, 123)):
+        return 6
+    elif nearly(color, (0, 0, 0)) and not nearly(extra_color, (255, 0, 0)):
+        return 7
+    elif nearly(color, (123, 123, 123)):
+        return 8
+    elif nearly(color, (189, 189, 189)):
+        return 0
+    elif nearly(extra_color, (255, 0, 0)):
+        return MINE_SIGNATURE
+    else:
+        raise RuntimeError('Не удалось распознать цвет.')
+
+
+# Сравнивает цвета на приблизительное равенство.
+def nearly(color1, color2):
+    nearly.MAX_DIFFERENCE = 10
+    for i in range(len(color1)):
+        if abs(color1[i] - color2[i]) > nearly.MAX_DIFFERENCE:
+            return False
+    return True

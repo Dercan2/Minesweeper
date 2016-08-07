@@ -2,19 +2,14 @@ import Bot
 from GameField import GameField
 from Blank import Blank
 from Bot import Bot
+from ActualGame import Combatant
+from time import sleep
 
-blank = Blank()
-field = GameField(blank)
+comb = Combatant()
+field = GameField(comb)
 bot = Bot(field)
-print(field)
-while True:
-    command = input()
-    if command == 'r':
-        bot.random_open()
-    elif command == 's':
-        while bot.smart_open() or bot.consider(0, False):
-            pass
-    else:
-        print('unknown command')
-        continue
-    print(field)
+count = 0
+while count < 20:
+    bot.random_open()
+    sleep(1)
+    count += 1

@@ -1,5 +1,5 @@
 from Cell import Cell
-from Cell import MINE_SIGNATURE
+from General import MINE_SIGNATURE
 
 
 # Абстрактное игровое поле. Отображает знания бота о текущей игре.
