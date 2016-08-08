@@ -12,11 +12,14 @@ class Bot:
 
     # Открывает случайную клетку.
     def random_open(self):
-        x = random.randint(0, self.field.width - 1)
-        y = random.randint(0, self.field.height - 1)
-        cell = self.field[y, x]
-        cell.open()
-        self.to_consider |= {cell}
+        while True:
+            x = random.randint(0, self.field.width - 1)
+            y = random.randint(0, self.field.height - 1)
+            cell = self.field[y, x]
+            if not cell.opened:
+                cell.open()
+                self.to_consider |= {cell}
+                break
 
     # ПЫТАЕТСЯ открыть клетку, исходя из того, что имеет.
     # True - была открыта по крайней мере одна клетка.
@@ -32,6 +35,7 @@ class Bot:
             else:
                 self.to_consider |= {cell}
                 self.to_consider |= cell.cells_around(opened=False, considered=False)
+            self.to_open -= {cell}
         return True
 
     # Рассматривает клетки. amount - сколько клеток надо рассмотреть; 0 - все.
@@ -85,6 +89,11 @@ class Bot:
             else:
                 cell.considered = False
                 self.to_consider |= {cell}
+
+    def action(self):
+        while self.smart_open() or self.consider(1, False):
+            pass
+        self.random_open()
 
 
 class NothingToConsider(Exception):

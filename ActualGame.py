@@ -19,12 +19,20 @@ NON_GAME_REGION_HEIGHT = 111
 class Combatant:
     def __init__(self):
         # Получение хэндла.
-        handle = windll.user32.FindWindowW(0, 'Сапер')
-        if handle == 0:
+        self.handle = windll.user32.FindWindowW(0, 'Сапер')
+        if self.handle == 0:
             raise NoGameError
         # Получение параметров окна.
         self.window = RECT()
-        windll.user32.GetWindowRect(handle, byref(self.window))
+        self.window_update()
+
+    # Обновляет положение окна, на случай, если оно было изменено.
+    # Если не найдет окна с сапером - выбрасывает NoGameError
+    def window_update(self):
+        if windll.user32.FindWindowW(0, 'Сапер') == 0:
+            raise NoGameError
+        # Получение параметров окна.
+        windll.user32.GetWindowRect(self.handle, byref(self.window))
 
     # Преобразует игровые координаты в координаты окна.
     def game_coordinates_to_screen(self, game_y, game_x):
@@ -47,10 +55,7 @@ class Combatant:
 
     # Открывает клетку и возвращает либо число мин вокруг, либо MINE_SIGNATURE
     def open(self, y, x):
-        # Проверка на наличие игры.
-        handle = windll.user32.FindWindowW(0, 'Сапер')
-        if handle == 0:
-            raise NoGameError
+        self.window_update()
         y, x = self.game_coordinates_to_screen(y, x)
         windll.user32.SetCursorPos(x, y)
         windll.user32.mouse_event(2, 0, 0, 0,0)
@@ -63,14 +68,11 @@ class Combatant:
 
     # Помечает клетку как содержащую мину.
     def mark(self, y, x):
-        # Проверка на наличие игры.
-        handle = windll.user32.FindWindowW(0, 'Сапер')
-        if handle == 0:
-            raise NoGameError
+        self.window_update()
         y, x = self.game_coordinates_to_screen(y, x)
         windll.user32.SetCursorPos(x, y)
         windll.user32.mouse_event(8, 0, 0, 0,0)
-        windll.user32.mouse_event(10, 0, 0, 0,0)
+        windll.user32.mouse_event(16, 0, 0, 0,0)
 
 
 # Класс, необходимый для получения данных об окне.

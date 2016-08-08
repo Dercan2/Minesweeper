@@ -10,6 +10,6 @@ field = GameField(comb)
 bot = Bot(field)
 count = 0
 while count < 20:
-    bot.random_open()
+    bot.action()
     sleep(1)
     count += 1

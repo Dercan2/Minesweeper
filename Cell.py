@@ -38,7 +38,7 @@ class Cell:
             self.field.source.mark(self.y, self.x)
 
     # Возвращает множество клеток вокруг текущей.
-    # Можно задать дополнительные условия ждя отсева.
+    # Можно задать дополнительные условия для отсева.
     def cells_around(self, opened=None, marked=None, considered=None):
         result = set()
         for offset_y in (-1, 0, 1):
