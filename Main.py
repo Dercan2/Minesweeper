@@ -12,9 +12,10 @@ count = 0
 try:
     while count < 20:
         bot.action()
+        if field.unclear_cells_counter == 0:
+            print('VICTORY')
+            break
         sleep(1)
         count += 1
 except General.BombOpened:
     print(field)
-    print()
-    print(str(field, True))

@@ -12,7 +12,7 @@ class Cell:
     marked = False
     # Полностью изучен. То есть известны все соседние клетки. Также True, если помечена бомбой.
     considered = False
-    # Токены бомб, обращающиеся к этой клетке.
+    # Токены бомб, обращающихся к этой клетке.
     tokens = set()
 
     # Создает клетку.
@@ -33,7 +33,8 @@ class Cell:
         self.mines_around = outcome
         # Все токены, обращающиеся к данной клетке, должны быть соответственно изменены.
         for token in self.tokens:
-            token -= {self}
+            token.cells -= {self}
+        self.field.unclear_cells_counter -= 1
 
     # Помечает клетку как содержащую мину.
     def mark(self):
@@ -46,7 +47,9 @@ class Cell:
             token.mines_amount -= 1
             token.cells -= {self}
             if token.mines_amount == 0:
-                self.tokens -= {token}
+                for cell in token.cells:
+                    cell.tokens -= {token}
+        self.field.unclear_cells_counter -= 1
 
     # Создает токен мины, основываясь на данной клетке.
     def tokenize(self):

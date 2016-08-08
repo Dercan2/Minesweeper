@@ -11,6 +11,7 @@ class GameField:
         self.source = source
         # Узнаем размер игрового поля.
         self.height, self.width = source.get_dimensions()
+        self.unclear_cells_counter = self.height * self.width
         # Двумерный массив клеток.
         self.sheet = [ [Cell(self, i, j) for j in range(self.width)] for i in range(self.height) ]
 
