@@ -77,31 +77,34 @@ class Bot:
         result = False
         while self.to_consider:
             cell = next(iter(self.to_consider))
-            print('new cell', cell.y, cell.x)
+            print('new cell', cell.y + 1, cell.x + 1)
             mines_left = cell.mines_around - len(cell.cells_around(marked=True))
-            print('mines left =', mines_left)
             # Выделение целых токенов.
             tokens = pick_out_tokens(cell.cells_around(opened=False, marked=False))
             print('tokens', len(tokens))
             # Начинаются размышления.
             for token in tokens:
-                print('watch another token')
                 cells_without_this_token = cell.cells_around(opened=False, marked=False) - token.cells
-                # Если попался токен, который обращается ко всем рассматриваемым клеткам.
-                if len(cells_without_this_token) == 0:
-                    continue
                 print('cells without token', len(cells_without_this_token))
                 # Если удается найти клетки без бомб.
                 if mines_left == token.mines_amount:
                     self.to_open |= cells_without_this_token
                     result = True
-                    print('SUCCESS: cells without bombs')
+                    # DEBUG
+                    print('SUCCESS: cells without bombs:')
+                    for ce in cells_without_this_token:
+                        print('   ', ce.y+1, ce.x+1)
+                    # DEBUG END
                 # Если удается найти бомбы.
                 elif mines_left - token.mines_amount == len(cells_without_this_token):
                     for suspect in cells_without_this_token:
                         suspect.mark()
                         self.to_consider |= suspect.cells_around(opened=True, considered=False)
+                    # DEBUG
                     print('SUCCESS: cells with bombs')
+                    for ce in cells_without_this_token:
+                        print('   ', ce.y+1, ce.x+1)
+                    # DEBUG END
                     result = True
             self.to_consider -= {cell}
         self.zero_kara()

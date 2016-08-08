@@ -1,3 +1,5 @@
+#!/usr/local/bin/python
+# -*- coding: UTF-8 -*-
 from General import BombOpened, MINE_SIGNATURE
 from MineToken import MineToken
 

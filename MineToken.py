@@ -7,7 +7,7 @@ class MineToken:
             cell.tokens |= {self}
 
 
-# Возвращает множество токенов, обращающихся только к данным клеткам. Если таковые найдутся.
+# Возвращает множество токенов, обращающихся только к данным клеткам, но не ко всем из данных. Если таковые найдутся.
 def pick_out_tokens(cells):
     # Создание множества всех токенов, встречающихся среди данных ячеек.
     tokens = set()
@@ -15,5 +15,5 @@ def pick_out_tokens(cells):
         tokens |= cell.tokens
     print('tokens before sift', len(tokens))
     # Отсев неполных токенов.
-    tokens = {token for token in tokens if token.cells <= cells}
+    tokens = {token for token in tokens if token.cells < cells}
     return tokens

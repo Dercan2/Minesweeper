@@ -57,9 +57,10 @@ class Combatant:
     def open(self, y, x):
         self.window_update()
         y, x = self.game_coordinates_to_screen(y, x)
-        windll.user32.SetCursorPos(x, y)
-        windll.user32.mouse_event(2, 0, 0, 0,0)
-        windll.user32.mouse_event(4, 0, 0, 0,0)
+        windll.user32.SetCursorPos(x + CELL_SIZE // 2, y + CELL_SIZE // 2)
+        # Выводит сапера на передний план.
+        windll.user32.SetForegroundWindow(self.handle)
+        # Нажатие и отпускание левой кнопки мыши.
         windll.user32.mouse_event(2, 0, 0, 0,0)
         windll.user32.mouse_event(4, 0, 0, 0,0)
         box = x, y, x + CELL_SIZE, y + CELL_SIZE
@@ -70,7 +71,10 @@ class Combatant:
     def mark(self, y, x):
         self.window_update()
         y, x = self.game_coordinates_to_screen(y, x)
-        windll.user32.SetCursorPos(x, y)
+        windll.user32.SetCursorPos(x + CELL_SIZE // 2, y + CELL_SIZE // 2)
+        # Выводит сапера на передний план.
+        windll.user32.SetForegroundWindow(self.handle)
+        # Нажатие и отпускание правой кнопки мыши.
         windll.user32.mouse_event(8, 0, 0, 0,0)
         windll.user32.mouse_event(16, 0, 0, 0,0)
 
