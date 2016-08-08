@@ -1,9 +1,10 @@
+import logging
 import General
+from time import sleep
 from GameField import GameField
 from Blank import Blank
 from Bot import Bot
 from ActualGame import Combatant
-from time import sleep
 
 comb = Combatant()
 field = GameField(comb)

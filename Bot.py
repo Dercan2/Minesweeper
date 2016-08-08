@@ -1,5 +1,7 @@
 import random
+import logging
 from MineToken import pick_out_tokens
+from General import Victory
 
 
 class Bot:
@@ -14,8 +16,7 @@ class Bot:
     # Открывает случайную клетку.
     def random_open(self):
         if self.field.unclear_cells_counter == 0:
-            return
-        print('random open')
+            raise Victory
         while True:
             x = random.randint(0, self.field.width - 1)
             y = random.randint(0, self.field.height - 1)
@@ -23,6 +24,7 @@ class Bot:
             if not cell.opened and not cell.marked:
                 cell.open()
                 self.to_consider |= {cell}
+                logging.debug('Великий рандом открыл {}, {}.'.format(x+1, y+1))
                 break
 
     # ПЫТАЕТСЯ открыть клетку, исходя из того, что имеет.
@@ -64,7 +66,7 @@ class Bot:
 
     # Рассматривает клетки с помощью токенов.
     def consider_tokens(self):
-        print('consider_tokens called.')
+        logging.debug('Начало использования токенов.')
         # Стирание старых токенов
         for cell in self.field:
             cell.tokens = set()
@@ -77,11 +79,14 @@ class Bot:
         result = False
         while self.to_consider:
             cell = next(iter(self.to_consider))
-            print('new cell', cell.y + 1, cell.x + 1)
             mines_left = cell.mines_around - len(cell.cells_around(marked=True))
+            # log
+            log_msg = 'Рассматривается клетка {}, {} с {} неизвестными минами.'
+            logging.debug(log_msg.format(cell.x+1, cell.y+1, mines_left))
             # Выделение целых токенов.
             tokens = pick_out_tokens(cell.cells_around(opened=False, marked=False))
-            print('tokens', len(tokens))
+            log_msg = '  Токенов: {}'
+            logging.debug(log_msg.format(len(tokens)))
             # Начинаются размышления.
             for token in tokens:
                 cells_without_this_token = cell.cells_around(opened=False, marked=False) - token.cells
@@ -108,6 +113,7 @@ class Bot:
                     result = True
             self.to_consider -= {cell}
         self.zero_kara()
+        logging.debug('Завершение токенов с результатом {}.'.format(result))
         return result
 
     # Заново составляет список клеток, которые надо рассмотреть.
@@ -126,10 +132,12 @@ class Bot:
                 self.to_consider |= {cell}
 
     def action(self):
+        if self.field.unclear_cells_counter == 0:
+            raise Victory
         while self.smart_open() or self.consider() or self.consider_tokens():
             pass
+        if self.field.unclear_cells_counter == 0:
+            raise Victory
         self.random_open()
-
-
-class NothingToConsider(Exception):
-    pass
+        if self.field.unclear_cells_counter == 0:
+            raise Victory

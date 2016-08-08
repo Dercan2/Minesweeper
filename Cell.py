@@ -1,6 +1,6 @@
 #!/usr/local/bin/python
 # -*- coding: UTF-8 -*-
-from General import BombOpened, MINE_SIGNATURE
+from General import BombOpened, MINE_SIGNATURE, CLOSED_SYMBOL, MINE_SYMBOL, MARK_SYMBOL
 from MineToken import MineToken
 
 
@@ -83,3 +83,6 @@ class Cell:
                 else:
                     result |= {cell}
         return result
+
+    def field_piece(self):
+        pass
