@@ -32,7 +32,7 @@ class GameField:
                 elif cell.opened and cell.mines_around != MINE_SIGNATURE:
                     symbol = str(cell.mines_around)
                 elif cell.opened and cell.mines_around == MINE_SIGNATURE:
-                    symbol = str(GameField.MINE_SYMBOL)
+                    symbol = GameField.MINE_SYMBOL
                 elif cell.marked:
                     symbol = GameField.MARK_SYMBOL
                 index = symbols_in_row * y + x
