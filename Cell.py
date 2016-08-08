@@ -1,4 +1,5 @@
 from General import BombOpened, MINE_SIGNATURE
+from MineToken import MineToken
 
 
 # Ячейка игрового поля.
@@ -26,17 +27,34 @@ class Cell:
     def open(self):
         self.opened = True
         outcome = self.field.source.open(self.y, self.x)
-        if outcome != MINE_SIGNATURE:
-            self.mines_around = outcome
-        else:
+        if outcome == MINE_SIGNATURE:
             self.mines_around = MINE_SIGNATURE
             raise BombOpened
+        self.mines_around = outcome
+        # Все токены, обращающиеся к данной клетке, должны быть соответственно изменены.
+        for token in self.tokens:
+            token -= {self}
 
     # Помечает клетку как содержащую мину.
     def mark(self):
-        if not self.marked:
-            self.considered = self.marked = True
-            self.field.source.mark(self.y, self.x)
+        if self.marked:
+            return
+        self.considered = self.marked = True
+        self.field.source.mark(self.y, self.x)
+        # Все токены, обращающиеся к данной клетке, должны быть соответственно изменены.
+        for token in list(self.tokens):
+            token.mines_amount -= 1
+            token.cells -= {self}
+            if token.mines_amount == 0:
+                self.tokens -= {token}
+
+    # Создает токен мины, основываясь на данной клетке.
+    def tokenize(self):
+        if not self.opened or self.considered:
+            return
+        mines_amount = self.mines_around - len(self.cells_around(marked=True))
+        cells = self.cells_around(opened=False, marked=False)
+        return MineToken(mines_amount, cells)
 
     # Возвращает множество клеток вокруг текущей.
     # Можно задать дополнительные условия для отсева.
