@@ -1,4 +1,3 @@
-import Bot
 import General
 from GameField import GameField
 from Blank import Blank
