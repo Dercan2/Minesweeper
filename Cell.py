@@ -29,6 +29,7 @@ class Cell:
         if outcome != MINE_SIGNATURE:
             self.mines_around = outcome
         else:
+            self.mines_around = MINE_SIGNATURE
             raise BombOpened
 
     # Помечает клетку как содержащую мину.

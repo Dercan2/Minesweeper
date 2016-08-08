@@ -34,7 +34,7 @@ class Bot:
                 self.to_open |= cell.cells_around(opened=False)
             else:
                 self.to_consider |= {cell}
-                self.to_consider |= cell.cells_around(opened=False, considered=False)
+                self.to_consider |= cell.cells_around(opened=True, considered=False)
             self.to_open -= {cell}
         return True
 
