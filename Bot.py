@@ -2,16 +2,14 @@ import random
 import logging
 from MineToken import pick_out_tokens
 from General import Victory
+from Cell import open_cells, mark_cells
 
 
 class Bot:
-    # Клетки, которые надо изучить.
-    to_consider = set()
-    # Клетки, которые надо открыть.
-    to_open = set()
-
     def __init__(self, game_field):
         self.field = game_field
+
+    tokens = property(lambda self: self.field.tokens)
 
     # Открывает случайную клетку.
     def random_open(self):
@@ -22,9 +20,8 @@ class Bot:
             y = random.randint(0, self.field.height - 1)
             cell = self.field[y, x]
             if not cell.opened and not cell.marked:
-                cell.open()
-                self.to_consider |= {cell}
                 logging.debug('Великий рандом открыл {}, {}.'.format(x+1, y+1))
+                cell.open()
                 break
 
     # ПЫТАЕТСЯ открыть клетку, исходя из того, что имеет.
@@ -112,7 +109,7 @@ class Bot:
                     # DEBUG END
                     result = True
             self.to_consider -= {cell}
-        self.zero_kara()
+        #self.zero_kara()
         logging.debug('Завершение токенов с результатом {}.'.format(result))
         return result
 
@@ -134,10 +131,39 @@ class Bot:
     def action(self):
         if self.field.unclear_cells_counter == 0:
             raise Victory
-        while self.smart_open() or self.consider() or self.consider_tokens():
+        while self.consider_tokens_by_one():
             pass
         if self.field.unclear_cells_counter == 0:
             raise Victory
         self.random_open()
         if self.field.unclear_cells_counter == 0:
             raise Victory
+
+    # Рассматривает токены по одному и пытается разрешить статусы клеток.
+    # True - если удалось разрешить хотя бы одну клетку.
+    def consider_tokens_by_one(self):
+        result = False
+        tokens_to_consider = list(self.tokens)
+        for token in tokens_to_consider:
+            result |= check_token(token)
+        return result
+
+
+# Проверяет токен, чтобы найти клетки, которые можно открыть / отметить.
+# True - удалось найти такие клетки.
+def check_token(token):
+    # Проверка на случай, если этот токен перестал существовать, пока рассматривались остальные.
+    if not token:
+        return False
+    # Нераскрытых клеток столько же, сколько и мин.
+    if len(token.cells) == token.mines_amount:
+        mark_cells(token.cells)
+    # Не осталось мин.
+    elif token.mines_amount == 0:
+        open_cells(token.cells)
+    # Проверка данного токена ничего не дала.
+    else:
+        return False
+    # Сработала одна из двух предыдущих проверок.
+    token.delete()
+    return True

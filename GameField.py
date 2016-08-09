@@ -4,6 +4,9 @@ from General import MINE_SIGNATURE, CLOSED_SYMBOL, MINE_SYMBOL, MARK_SYMBOL
 
 # Абстрактное игровое поле. Отображает знания бота о текущей игре.
 class GameField:
+    # Множество токенов мин данного игрового поля.
+    tokens = set()
+
     # Создает абстрактное игровое поле с указанными параметрами.
     # source - объект, у которого будут узнаваться подробности игры.
     # То есть именно этот объект отвечает за связь бота и внешней игры.
@@ -15,7 +18,7 @@ class GameField:
         # Двумерный массив клеток.
         self.sheet = [ [Cell(self, i, j) for j in range(self.width)] for i in range(self.height) ]
 
-    # Доступ к клеткам.
+    # Доступ к клеткам как в двумерном массиве.
     def __getitem__(self, key):
         return self.sheet[key[0]][key[1]]
 
