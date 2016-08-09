@@ -13,6 +13,8 @@ GAME_FIELD_OFFSET_Y = 100
 # Пространство, занимаемое не ячейками поля.
 NON_GAME_REGION_WIDTH = 26
 NON_GAME_REGION_HEIGHT = 111
+# Задержка между командами (в секундах)
+TIME_DELAY = 0.005
 
 
 # Объект-источник, который получает информацию из Сапер.exe
@@ -57,11 +59,15 @@ class Combatant:
     def open(self, y, x):
         self.window_update()
         y, x = self.game_coordinates_to_screen(y, x)
-        windll.user32.SetCursorPos(x, y)
+        windll.user32.SetCursorPos(x + CELL_SIZE // 2, y + CELL_SIZE // 2)
+        # Выводит сапера на передний план.
+        windll.user32.SetForegroundWindow(self.handle)
+        time.sleep(TIME_DELAY)
+        # Нажатие и отпускание левой кнопки мыши.
         windll.user32.mouse_event(2, 0, 0, 0,0)
+        time.sleep(TIME_DELAY)
         windll.user32.mouse_event(4, 0, 0, 0,0)
-        windll.user32.mouse_event(2, 0, 0, 0,0)
-        windll.user32.mouse_event(4, 0, 0, 0,0)
+        time.sleep(TIME_DELAY)
         box = x, y, x + CELL_SIZE, y + CELL_SIZE
         screen = ImageGrab.grab(box)
         return define_cell(screen)
@@ -70,9 +76,15 @@ class Combatant:
     def mark(self, y, x):
         self.window_update()
         y, x = self.game_coordinates_to_screen(y, x)
-        windll.user32.SetCursorPos(x, y)
+        windll.user32.SetCursorPos(x + CELL_SIZE // 2, y + CELL_SIZE // 2)
+        # Выводит сапера на передний план.
+        windll.user32.SetForegroundWindow(self.handle)
+        time.sleep(TIME_DELAY)
+        # Нажатие и отпускание правой кнопки мыши.
         windll.user32.mouse_event(8, 0, 0, 0,0)
+        time.sleep(TIME_DELAY)
         windll.user32.mouse_event(16, 0, 0, 0,0)
+        time.sleep(TIME_DELAY)
 
 
 # Класс, необходимый для получения данных об окне.

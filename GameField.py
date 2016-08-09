@@ -1,9 +1,12 @@
 from Cell import Cell
-from General import MINE_SIGNATURE
+from General import MINE_SIGNATURE, CLOSED_SYMBOL, MINE_SYMBOL, MARK_SYMBOL
 
 
 # Абстрактное игровое поле. Отображает знания бота о текущей игре.
 class GameField:
+    # Множество токенов мин данного игрового поля.
+    tokens = set()
+
     # Создает абстрактное игровое поле с указанными параметрами.
     # source - объект, у которого будут узнаваться подробности игры.
     # То есть именно этот объект отвечает за связь бота и внешней игры.
@@ -11,30 +14,29 @@ class GameField:
         self.source = source
         # Узнаем размер игрового поля.
         self.height, self.width = source.get_dimensions()
+        self.unclear_cells_counter = self.height * self.width
         # Двумерный массив клеток.
         self.sheet = [ [Cell(self, i, j) for j in range(self.width)] for i in range(self.height) ]
 
-    # Доступ к клеткам.
+    # Доступ к клеткам как в двумерном массиве.
     def __getitem__(self, key):
         return self.sheet[key[0]][key[1]]
 
     # Представляет игровое поле в тектовом виде.
-    def __str__(self, show_considered = False):
+    def __str__(self):
         symbols_in_row = self.width + 1
         symbols_amount = symbols_in_row * self.height - 1
         list_of_symbols = ['\n' for i in range(symbols_amount)]
         for y in range(self.height):
             for x in range(self.width):
                 cell = self[y, x]
-                symbol = GameField.CLOSED_SYMBOL
-                if show_considered and cell.opened and cell.considered:
-                    symbol = GameField.CONSIDERED_SYMBOL
-                elif cell.opened and cell.mines_around != MINE_SIGNATURE:
+                symbol = CLOSED_SYMBOL
+                if cell.opened and cell.mines_around != MINE_SIGNATURE:
                     symbol = str(cell.mines_around)
                 elif cell.opened and cell.mines_around == MINE_SIGNATURE:
-                    symbol = GameField.MINE_SYMBOL
+                    symbol = MINE_SYMBOL
                 elif cell.marked:
-                    symbol = GameField.MARK_SYMBOL
+                    symbol = MARK_SYMBOL
                 index = symbols_in_row * y + x
                 list_of_symbols[index] = symbol
         return ''.join(list_of_symbols)
@@ -57,9 +59,3 @@ class GameField:
 
     def __iter__(self):
         return GameField.Iterator(self)
-
-
-GameField.MARK_SYMBOL = 'M'
-GameField.CLOSED_SYMBOL = '#'
-GameField.CONSIDERED_SYMBOL = 'c'
-GameField.MINE_SYMBOL = '*'

@@ -3,6 +3,12 @@
 # Константа для обозначения мины.
 MINE_SIGNATURE = 99
 
+# Символы для обозначений объектов.
+MARK_SYMBOL = 'M'
+CLOSED_SYMBOL = '#'
+CONSIDERED_SYMBOL = 'c'
+MINE_SYMBOL = '*'
+
 
 # Означает, что нет окна с игрой.
 class NoGameError(Exception):
@@ -11,4 +17,9 @@ class NoGameError(Exception):
 
 # Была открыта клетка с бомбой.
 class BombOpened(Exception):
+    pass
+
+
+# Были определены все клетки.
+class Victory(Exception):
     pass
