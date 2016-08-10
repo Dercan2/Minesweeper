@@ -1,5 +1,6 @@
 import random
 import logging
+from itertools import combinations
 from MineToken import pick_out_tokens
 from General import Victory
 from Cell import open_cells, mark_cells
@@ -24,95 +25,6 @@ class Bot:
                 cell.open()
                 break
 
-    # ПЫТАЕТСЯ открыть клетку, исходя из того, что имеет.
-    # True - была открыта по крайней мере одна клетка.
-    def smart_open(self):
-        if not self.to_open:
-            return False
-        while self.to_open:
-            cell = next(iter(self.to_open))
-            cell.open()
-            if cell.mines_around == 0:
-                cell.considered = True
-                self.to_open |= cell.cells_around(opened=False)
-            else:
-                self.to_consider |= {cell}
-                self.to_consider |= cell.cells_around(opened=True, considered=False)
-            self.to_open -= {cell}
-        return True
-
-    # Рассматривает клетки и пытается найти мины / открыть новые.
-    # Возвращает True, если удалось найти новую клетку, которую надо открыть.
-    def consider(self):
-        # Перебор элементов.
-        while self.to_consider:
-            cell = next(iter(self.to_consider))
-            self.to_consider -= {cell}
-            # Если вокруг столько же закрытых клеток, сколько и бомб.
-            if cell.mines_around == len(cell.cells_around(opened=False)):
-                cell.considered = True
-                for suspect in cell.cells_around(opened=False):
-                    suspect.mark()
-                    self.to_consider |= suspect.cells_around(opened=True, considered=False)
-            # Если вокруг достаточно отмеченных ячеек.
-            elif cell.mines_around == len(cell.cells_around(marked=True)):
-                cell.considered = True
-                self.to_open |= cell.cells_around(marked=False, opened=False)
-                return True
-        return False
-
-    # Рассматривает клетки с помощью токенов.
-    def consider_tokens(self):
-        logging.debug('Начало использования токенов.')
-        # Стирание старых токенов
-        for cell in self.field:
-            cell.tokens = set()
-        # Расстановка новых токенов и создание множества рассматриваемых клеток.
-        for cell in self.field:
-            if cell.opened and not cell.considered:
-                cell.tokenize()
-                self.to_consider |= {cell}
-        # Перебор клеток.
-        result = False
-        while self.to_consider:
-            cell = next(iter(self.to_consider))
-            mines_left = cell.mines_around - len(cell.cells_around(marked=True))
-            # log
-            log_msg = 'Рассматривается клетка {}, {} с {} неизвестными минами.'
-            logging.debug(log_msg.format(cell.x+1, cell.y+1, mines_left))
-            # Выделение целых токенов.
-            tokens = pick_out_tokens(cell.cells_around(opened=False, marked=False))
-            log_msg = '  Токенов: {}'
-            logging.debug(log_msg.format(len(tokens)))
-            # Начинаются размышления.
-            for token in tokens:
-                cells_without_this_token = cell.cells_around(opened=False, marked=False) - token.cells
-                print('cells without token', len(cells_without_this_token))
-                # Если удается найти клетки без бомб.
-                if mines_left == token.mines_amount:
-                    self.to_open |= cells_without_this_token
-                    result = True
-                    # DEBUG
-                    print('SUCCESS: cells without bombs:')
-                    for ce in cells_without_this_token:
-                        print('   ', ce.y+1, ce.x+1)
-                    # DEBUG END
-                # Если удается найти бомбы.
-                elif mines_left - token.mines_amount == len(cells_without_this_token):
-                    for suspect in cells_without_this_token:
-                        suspect.mark()
-                        self.to_consider |= suspect.cells_around(opened=True, considered=False)
-                    # DEBUG
-                    print('SUCCESS: cells with bombs')
-                    for ce in cells_without_this_token:
-                        print('   ', ce.y+1, ce.x+1)
-                    # DEBUG END
-                    result = True
-            self.to_consider -= {cell}
-        #self.zero_kara()
-        logging.debug('Завершение токенов с результатом {}.'.format(result))
-        return result
-
     # Заново составляет список клеток, которые надо рассмотреть.
     # Также заново назначает considered.
     def zero_kara(self):
@@ -131,7 +43,7 @@ class Bot:
     def action(self):
         if self.field.unclear_cells_counter == 0:
             raise Victory
-        while self.consider_tokens_by_one():
+        while self.consider_tokens_by_one() or self.consider_tokens_by_two():
             pass
         if self.field.unclear_cells_counter == 0:
             raise Victory
@@ -148,6 +60,13 @@ class Bot:
             result |= check_token(token)
         return result
 
+    def consider_tokens_by_two(self):
+        result = False
+        tokens_to_consider = frozenset(self.tokens)
+        for token_pair in combinations(tokens_to_consider, 2):
+            result |= check_2_tokens(*token_pair)
+        return result
+
 
 # Проверяет токен, чтобы найти клетки, которые можно открыть / отметить.
 # True - удалось найти такие клетки.
@@ -155,8 +74,8 @@ def check_token(token):
     # Проверка на случай, если этот токен перестал существовать, пока рассматривались остальные.
     if not token:
         return False
-    # Нераскрытых клеток столько же, сколько и мин.
-    if len(token.cells) == token.mines_amount:
+    # Нет клеток без мин.
+    if token.blanks_amount == 0:
         mark_cells(token.cells)
     # Не осталось мин.
     elif token.mines_amount == 0:
@@ -167,3 +86,39 @@ def check_token(token):
     # Сработала одна из двух предыдущих проверок.
     token.delete()
     return True
+
+
+# Рассматривает 2 токена и пытается определить клетки.
+def check_2_tokens(token1, token2):
+    # Токены должны существовать и пересекаться.
+    if not token1 or not token2 or not (token1.cells & token2.cells):
+        return False
+    # Если токены оказались равны, один из них надо удалить.
+    if token1 == token2:
+        token2.delete()
+        return False
+    # Результат функции. Возвращается в конце.
+    result = False
+    # Сортировка токенов по числу мин.
+    token_more_mines, token_less_mines = token1, token2
+    if token_more_mines.mines_amount < token_less_mines.mines_amount:
+        token_more_mines, token_less_mines = token_less_mines, token_more_mines
+    # Случай, когда в token_more_mines так много мин, что даже если все мины token_less_mines лежат в пересечении,
+    # что остальные клетки token_more_mines необходимо заполнить минами.
+    difference = token_more_mines.cells - token_less_mines.cells
+    if len(difference) == token_more_mines.mines_amount - token_less_mines.mines_amount != 0:
+        mark_cells(difference)
+        result = True
+        logging.debug('При рассмотрении двух токенов нашлись мины.')
+    del token_more_mines, token_less_mines
+    # Сортировка токенов по числу пустых клеток.
+    token_more_blanks, token_less_blanks = token1, token2
+    if token_more_blanks.blanks_amount < token_less_blanks.blanks_amount:
+        token_more_blanks, token_less_blanks = token_less_blanks, token_more_blanks
+    # Аналогично для пустых клеток.
+    difference = token_more_blanks.cells - token_less_blanks.cells
+    if len(difference) == token_more_blanks.blanks_amount - token_less_blanks.blanks_amount != 0:
+        open_cells(difference)
+        result = True
+        logging.debug('При рассмотрении двух токенов нашлись свободные клетки..')
+    return result
