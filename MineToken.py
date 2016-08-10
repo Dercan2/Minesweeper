@@ -3,18 +3,24 @@ import logging
 
 # Токен мины. Это значит, что среди всех клеток, к котороым обращается токен, есть мина(ы).
 class MineToken:
-    def __init__(self, mines_amount, cells):
+    def __init__(self, mines_amount, cells, cell_creator=None):
         if not cells:
             raise ValueError('Попытка создать токен на пустом множестве клеток.')
+        # Запоминает создателя. Полезно для отладки.
+        self.creator = cell_creator
+        # Заполнение остальных полей.
         self.mines_amount = mines_amount
         self.cells = cells
+        # Запоминает поле, на котором создан.
+        self.field = next(iter(self.cells)).field
+        # Теперь имея creator и cells токен можно хешировать.
         for cell in cells:
             cell.tokens |= {self}
-        # Запоминает поле, на котором создан, и добавляет себя в базу токенов этого поля.
-        self.field = next(iter(self.cells)).field
-        logging.debug('Новосозданный токен нашел поле {}'.format(id(self.field)))
+        # Добавляет себя в базу токенов поля.
         self.field.tokens |= {self}
-        logging.debug('token with {} cells'.format(len(self.cells)))
+
+    # Число незаминированных клеток.
+    blanks_amount = property(lambda self: len(self.cells) - self.mines_amount)
 
     # Перестает обращаться к клетке.
     def discard(self, cell):
@@ -45,12 +51,42 @@ class MineToken:
     def __bool__(self):
         return bool(self.cells)
 
+    # Информация о токене.
     def __str__(self):
         line1 = 'Токен, мин: {}'.format(self.mines_amount)
         cells_info = [str(cell.x+1) + ', ' + str(cell.y+1) for cell in self.cells]
         cells_info = '; '.join(cells_info)
         line2 = '   Клетки: ' + cells_info
         return line1 + '\n' + line2
+
+    # Методы сравнения.
+    # ==
+    def __eq__(self, other):
+        return self.mines_amount == other.mines_amount and self.cells == other.cells
+
+    # !=
+    def __ne__(self, other):
+        return self.mines_amount != other.mines_amount or self.cells != other.cells
+
+    # <
+    # А если точнее, то принадлежит ли один токен другому.
+    def __lt__(self, other):
+        return self.mines_amount == other.mines_amount and self.cells < other.cells
+
+    # >
+    def __gt__(self, other):
+        return self.mines_amount == other.mines_amount and self.cells > other.cells
+
+    # <=
+    def __le__(self, other):
+        return self.mines_amount == other.mines_amount and self.cells <= other.cells
+
+    # >=
+    def __ge__(self, other):
+        return self.mines_amount == other.mines_amount and self.cells >= other.cells
+
+    def __hash__(self):
+        return self.creator.y * self.field.width + self.creator.x
 
 
 # Возвращает множество токенов, обращающихся только к данным клеткам, но не ко всем из данных. Если таковые найдутся.

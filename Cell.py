@@ -51,7 +51,7 @@ class Cell:
         self.unsubscribe_tokens()
         self.field.unclear_cells_counter -= 1
 
-    # Обновляет значение considered у себя и соседей.
+    # Обновляет значение considered у себя и у соседей.
     def check_considered(self):
         # На всякий случай. Не предполагается вызывать эту функцию на закрытых клетках.
         if not self.opened:
@@ -70,12 +70,13 @@ class Cell:
             return
         mines_amount = self.mines_around - len(self.cells_around(marked=True))
         cells = self.cells_around(opened=False, marked=False)
-        return MineToken(mines_amount, cells)
+        return MineToken(mines_amount, cells, self)
 
     # Отписывает все токены от этой клетки.
     def unsubscribe_tokens(self):
         for token in list(self.tokens):
             token.discard(self)
+        self.tokens = set()
 
     # Возвращает множество клеток вокруг текущей.
     # Можно задать дополнительные условия для отсева.
