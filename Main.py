@@ -12,18 +12,14 @@ logging.basicConfig(filename='Minesweeper.log', level=logging.DEBUG)
 logging.info('Начало новой игры.')
 comb = Combatant()
 field = GameField(comb)
-logging.debug('Id игрового поля: {}'.format(id(field)))
 bot = Bot(field)
-count = 0
 try:
-    while count < 20:
+    while True:
         bot.action()
-        if field.unclear_cells_counter == 0:
-            print('VICTORY')
-            break
-        sleep(1)
-        count += 1
-except General.BombOpened:
-    print(field)
+except General.MineOpened:
+    logging.debug(field)
+    print('Oops, a mine was opened =(')
+    logging.debug('Проигрыш.')
 except General.Victory:
     print('Victory!')
+    logging.debug('Победа.')

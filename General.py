@@ -16,7 +16,7 @@ class NoGameError(Exception):
 
 
 # Была открыта клетка с бомбой.
-class BombOpened(Exception):
+class MineOpened(Exception):
     pass
 
 

@@ -1,5 +1,5 @@
 import logging
-from General import BombOpened, MINE_SIGNATURE, CLOSED_SYMBOL, MINE_SYMBOL, MARK_SYMBOL
+from General import MineOpened, MINE_SIGNATURE, CLOSED_SYMBOL, MINE_SYMBOL, MARK_SYMBOL
 from MineToken import MineToken
 
 
@@ -33,7 +33,7 @@ class Cell:
         outcome = self.field.source.open(self.y, self.x)
         if outcome == MINE_SIGNATURE:
             self.mines_around = MINE_SIGNATURE
-            raise BombOpened
+            raise MineOpened
         self.mines_around = outcome
         self.check_considered()
         self.unsubscribe_tokens()
