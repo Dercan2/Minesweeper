@@ -8,7 +8,7 @@ from Blank import Blank
 from Bot import Bot
 from ActualGame import Combatant
 
-logging.basicConfig(filename='Minesweeper.log', level=logging.DEBUG)
+#logging.basicConfig(filename='Minesweeper.log', level=logging.DEBUG)
 logging.info('Начало новой игры.')
 comb = Combatant()
 field = GameField(comb)

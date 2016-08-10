@@ -117,7 +117,7 @@ def check_2_tokens(token1, token2):
         token_more_blanks, token_less_blanks = token_less_blanks, token_more_blanks
     # Аналогично для пустых клеток.
     difference = token_more_blanks.cells - token_less_blanks.cells
-    if len(difference) == token_more_blanks.mines_amount - token_less_blanks.mines_amount != 0:
+    if len(difference) == token_more_blanks.blanks_amount - token_less_blanks.blanks_amount != 0:
         open_cells(difference)
         result = True
         logging.debug('При рассмотрении двух токенов нашлись свободные клетки..')
