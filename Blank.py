@@ -1,10 +1,23 @@
 import random
 from General import MINE_SIGNATURE
+from General import MINE_SIGNATURE, CLOSED_SYMBOL, MINE_SYMBOL, MARK_SYMBOL
 
 
 # Класс-источник заранее сгенерированного поля. Предназначен для тестов.
 class Blank:
-    def __init__(self, height=16, width=30, mines=99):
+    # Конструктор. По аргументам определяет, какой функцией создать объект.
+    def __init__(self, *args):
+        if len(args) == 1 and type(args[0]) is str:
+            self.create_specific_field(args[0])
+        else:
+            self.create_random_field(*args)
+
+    # Создает поле на основе строкового представления.
+    def create_specific_field(self, field_str):
+        pass
+
+    # Создает случайное поле с заданным числом клеток и мин.
+    def create_random_field(self, height=16, width=30, mines=99):
         self.width = width
         self.height = height
         self.mines = mines

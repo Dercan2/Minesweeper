@@ -1,3 +1,5 @@
+import logging
+
 # Основные константы и исключения игры.
 
 # Константа для обозначения мины.
@@ -8,11 +10,6 @@ MARK_SYMBOL = 'M'
 CLOSED_SYMBOL = '#'
 CONSIDERED_SYMBOL = 'c'
 MINE_SYMBOL = '*'
-
-
-# Означает, что нет окна с игрой.
-class NoGameError(Exception):
-    pass
 
 
 # Была открыта клетка с бомбой.

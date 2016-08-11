@@ -1,8 +1,11 @@
 # Файл игры содержит описание source класса - Combatant. Класс работает с действующей игрой.
 import time
+import logging
 from ctypes import Structure, wintypes, byref, windll
 from PIL import ImageGrab
-from General import NoGameError, MINE_SIGNATURE
+from General import MINE_SIGNATURE
+from Colors import Color
+import Colors
 
 # Основные константы для работы с окном игры; получены эмпирическим путем.
 # Размер ячейки игрового поля.
@@ -14,7 +17,7 @@ GAME_FIELD_OFFSET_Y = 100
 NON_GAME_REGION_WIDTH = 26
 NON_GAME_REGION_HEIGHT = 111
 # Задержка между командами (в секундах)
-TIME_DELAY = 0.005
+TIME_DELAY = 0.001
 
 
 # Объект-источник, который получает информацию из Сапер.exe
@@ -23,16 +26,62 @@ class Combatant:
         # Получение хэндла.
         self.handle = windll.user32.FindWindowW(0, 'Сапер')
         if self.handle == 0:
-            raise NoGameError
+            raise RuntimeError('Не найдено окно с игрой.')
         # Получение параметров окна.
         self.window = RECT()
         self.window_update()
+        # Выводит сапера на передний план.
+        windll.user32.SetForegroundWindow(self.handle)
+        # Делает снимок окна игры.
+        screen_box = self.window.left, self.window.top, self.window.right, self.window.bottom
+        image = ImageGrab.grab(screen_box)
+        # Получает снимок в виде двумерного массива цветов.
+        image_buffer = image.load()
+        # Нахождение основных элементов окна.
+        self.mines_counter_offset = self.calculate_mines_counter_position(image_buffer)
+        self.game_field_offset = self.calculate_game_field_position(image_buffer)
+
+    # Возращает смещение (относительно окна) счетчика мин.
+    def calculate_mines_counter_position(self, buffer):
+        # Проходит последовательно все клетки, пока не найдет красную.
+        x = y = 0
+        color = Colors.Black
+        while color != Colors.Red and color != Colors.DarkRed:
+            x += 1
+            if x >= self.window.width:
+                x = 0
+                y += 1
+                if y >= self.window.height:
+                    raise RuntimeError('Счетчик мин не был найден.')
+            color = Color(buffer[x, y])
+        # Теперь идем вверх и влево до тех пор, пока не найдем последнюю черную клетку.
+        good_colors = {Colors.Black, Colors.Red, Colors.DarkRed}
+        while Color(buffer[x, y]) in good_colors:
+            y -= 1
+        while Color(buffer[x, y]) in good_colors:
+            x -= 1
+        logging.debug('Определены координаты счетчика мин: %d, %d' % (y, x))
+        return y, x
+
+    # Возвращает смещение игрового поля.
+    def calculate_game_field_position(self, buffer):
+        # От счетчика мин идем вниз до тех пор, пока не встретим переход от темно серых клеток к белыи.
+        y, x = self.mines_counter_offset
+        while not (Color(buffer[x, y-1]) == Colors.DarkGrey and Color(buffer[x, y]) == Colors.White):
+            y += 1
+            if y >= self.window.height:
+                raise RuntimeError('Игровое поле не было найдено.')
+        # Теперь, когда положение y найдено, идем влево, пока цвет не станет темно серым.
+        while Color(buffer[x-1, y]) != Colors.DarkGrey:
+            x -= 1
+        logging.debug('Определены координаты игрового поля: %d, %d' % (y, x))
+        return y, x
 
     # Обновляет положение окна, на случай, если оно было изменено.
-    # Если не найдет окна с сапером - выбрасывает NoGameError
+    # Если не найдет окна с сапером - выбрасывает RuntimeError
     def window_update(self):
         if windll.user32.FindWindowW(0, 'Сапер') == 0:
-            raise NoGameError
+            raise RuntimeError('Не найдено окно с игрой.')
         # Получение параметров окна.
         windll.user32.GetWindowRect(self.handle, byref(self.window))
 
@@ -129,12 +178,3 @@ def define_cell(image):
         return MINE_SIGNATURE
     else:
         raise RuntimeError('Не удалось распознать цвет.')
-
-
-# Сравнивает цвета на приблизительное равенство.
-def nearly(color1, color2):
-    nearly.MAX_DIFFERENCE = 10
-    for i in range(len(color1)):
-        if abs(color1[i] - color2[i]) > nearly.MAX_DIFFERENCE:
-            return False
-    return True

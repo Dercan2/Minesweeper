@@ -8,6 +8,7 @@ from Blank import Blank
 from Bot import Bot
 from ActualGame import Combatant
 
+LOG_FILE_NAME = 'Minesweeper.log'
 #logging.basicConfig(filename='Minesweeper.log', level=logging.DEBUG)
 logging.info('Начало новой игры.')
 comb = Combatant()
