@@ -9,14 +9,13 @@ from Bot import Bot
 from ActualGame import Combatant
 
 LOG_FILE_NAME = 'Minesweeper.log'
-#logging.basicConfig(filename='Minesweeper.log', level=logging.DEBUG)
+logging.basicConfig(filename='Minesweeper.log', filemode='w', format='%(message)s', level=logging.DEBUG)
 logging.info('Начало новой игры.')
-comb = Combatant()
-field = GameField(comb)
-bot = Bot(field)
 try:
-    while True:
-        bot.action()
+    comb = Combatant()
+    field = GameField(comb)
+    bot = Bot(field)
+    bot.solve()
 except General.MineOpened:
     logging.debug('Поле:\n' + str(field))
     print('Oops, a mine was opened =(')
@@ -24,5 +23,8 @@ except General.MineOpened:
 except General.Victory:
     print('Victory!')
     logging.info('Победа.')
+except Exception as ex:
+    logging.exception(ex)
+    raise ex
 finally:
     logging.info('Завершение.\n')

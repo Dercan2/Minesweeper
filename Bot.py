@@ -14,7 +14,7 @@ class Bot:
 
     # Открывает случайную клетку.
     def random_open(self):
-        if self.field.unclear_cells_counter == 0:
+        if self.field.free_cells_amount == 0 and self.field.mines_amount == 0:
             raise Victory
         while True:
             x = random.randint(0, self.field.width - 1)
@@ -40,15 +40,12 @@ class Bot:
                 cell.considered = False
                 self.to_consider |= {cell}
 
-    def action(self):
-        if self.field.unclear_cells_counter == 0:
-            raise Victory
-        while self.consider_tokens_by_one() or self.consider_tokens_by_two():
-            pass
-        if self.field.unclear_cells_counter == 0:
-            raise Victory
-        self.random_open()
-        if self.field.unclear_cells_counter == 0:
+    def solve(self):
+        while self.field.mines_amount != 0 and self.field.free_cells_amount != 0:
+            while self.consider_tokens_by_one() or self.consider_tokens_by_two():
+                pass
+            self.random_open()
+        else:
             raise Victory
 
     # Рассматривает токены по одному и пытается разрешить статусы клеток.
@@ -120,5 +117,5 @@ def check_2_tokens(token1, token2):
     if len(difference) == token_more_blanks.blanks_amount - token_less_blanks.blanks_amount != 0:
         open_cells(difference)
         result = True
-        logging.debug('При рассмотрении двух токенов нашлись свободные клетки..')
+        logging.debug('При рассмотрении двух токенов нашлись свободные клетки.')
     return result

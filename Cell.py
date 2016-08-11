@@ -38,7 +38,7 @@ class Cell:
         self.check_considered()
         self.unsubscribe_tokens()
         self.tokenize()
-        self.field.unclear_cells_counter -= 1
+        self.field.free_cells_amount -= 1
 
     # Помечает клетку как содержащую мину.
     def mark(self):
@@ -49,7 +49,7 @@ class Cell:
         self.field.source.mark(self.y, self.x)
         self.check_considered()
         self.unsubscribe_tokens()
-        self.field.unclear_cells_counter -= 1
+        self.field.mines_amount -= 1
 
     # Обновляет значение considered у себя и у соседей.
     def check_considered(self):

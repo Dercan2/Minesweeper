@@ -25,21 +25,24 @@ class Color:
         result += self.b * COMPONENT_MAX_VALUE ** 2
         return result
 
+    def __str__(self):
+        return str(self.get_tuple())
+
     def get_tuple(self):
         return self.r, self.g, self.b
 
 
 # Некоторые используемые цвета.
-LightGrey = Color(192, 192, 192)
+Grey = Color(192, 192, 192)
 DarkGrey = Color(128, 128, 128)
 Red = Color(255, 0, 0)
 DarkRed = Color(128, 0, 0)
 White = Color(255, 255, 255)
 Black = Color(0, 0, 0)
 Blue = Color(0, 0, 255)
-Green = Color(128, 0, 0)
+Green = Color(0, 128, 0)
 DarkBlue = Color(0, 0, 128)
 Teal = Color(0, 128, 128)
 # Соответствие цифры и цвета.
-DigitToColorMap = {1:Blue, 2:Green, 3:Red, 4:DarkBlue, 5:DarkRed, 6:Teal, 7:Black, 8:DarkGrey}
+DigitToColorMap = {0:Grey, 1:Blue, 2:Green, 3:Red, 4:DarkBlue, 5:DarkRed, 6:Teal, 7:Black, 8:DarkGrey}
 ColorToDigitMap = {DigitToColorMap[key]:key for key in DigitToColorMap}
