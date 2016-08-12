@@ -14,7 +14,7 @@ class Bot:
 
     # Открывает случайную клетку.
     def random_open(self):
-        if self.field.free_cells_amount == 0 and self.field.mines_amount == 0:
+        if self.field.blanks_amount == 0:
             raise Victory
         while True:
             x = random.randint(0, self.field.width - 1)
@@ -41,7 +41,7 @@ class Bot:
                 self.to_consider |= {cell}
 
     def solve(self):
-        while self.field.mines_amount != 0 and self.field.free_cells_amount != 0:
+        while self.field.blanks_amount != 0:
             while self.consider_tokens_by_one() or self.consider_tokens_by_two():
                 pass
             self.random_open()
@@ -76,7 +76,9 @@ def check_token(token):
         mark_cells(token.cells)
     # Не осталось мин.
     elif token.mines_amount == 0:
-        open_cells(token.cells)
+        token.creator.open_around()
+        # Старый способ.
+        # open_cells(token.cells)
     # Проверка данного токена ничего не дала.
     else:
         return False

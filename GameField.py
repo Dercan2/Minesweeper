@@ -12,7 +12,7 @@ class GameField:
         # Узнаем размер игрового поля.
         self.height, self.width = source.dimensions
         self.mines_amount = source.mines_amount
-        self.free_cells_amount = self.height * self.width - self.mines_amount
+        self.blanks_amount = self.height * self.width - self.mines_amount
         # Двумерный массив клеток.
         self.sheet = [ [Cell(self, i, j) for j in range(self.width)] for i in range(self.height) ]
         # Множество токенов мин данного игрового поля.

@@ -134,10 +134,8 @@ class Combatant:
         windll.user32.mouse_event(4, 0, 0, 0,0)
         time.sleep(TIME_DELAY)
 
-        # Снимок клетки, чтобы изучить.
-        box = x, y, x + CELL_SIZE, y + CELL_SIZE
-        cell_image = ImageGrab.grab(box)
-        result = define_cell(cell_image)
+        # Изучаем клетку.
+        result = self.check(game_y, game_x)
         # Если мина - это проблема бота, клетка была открыта.
         # А вот если она не открыта - это проблема данного класса.
         if result == CLOSED_SIGNATURE:
@@ -146,6 +144,25 @@ class Combatant:
             raise RuntimeError('Не удалось открыть клетку %d, %d, т.к. она помечена миной.' % (game_x+1, game_y+1))
         else:
             return result
+
+    def open_around(self, game_y, game_x):
+        self.window_update()
+        y, x = self.game_coordinates_to_screen(game_y, game_x)
+        # Выводит сапера на передний план.
+        windll.user32.SetForegroundWindow(self.handle)
+
+        # Установка курсора приблизительно посередине клетки.
+        windll.user32.SetCursorPos(x + CELL_SIZE // 2, y + CELL_SIZE // 2)
+        time.sleep(TIME_DELAY)
+        # Нажатие и отпускание обоих кнопок мыши.
+        windll.user32.mouse_event(2, 0, 0, 0,0)
+        windll.user32.mouse_event(8, 0, 0, 0,0)
+        time.sleep(TIME_DELAY)
+        windll.user32.mouse_event(4, 0, 0, 0,0)
+        windll.user32.mouse_event(16, 0, 0, 0,0)
+        time.sleep(TIME_DELAY)
+
+        # Как-то так. Не знаю, писать ли здесь проверку, если она есть в Cell.open_around
 
     # Помечает клетку как содержащую мину.
     def mark(self, game_y, game_x):
@@ -163,15 +180,20 @@ class Combatant:
         windll.user32.mouse_event(16, 0, 0, 0,0)
         time.sleep(TIME_DELAY)
 
-        # Снимок клетки для проверки.
-        box = x, y, x + CELL_SIZE, y + CELL_SIZE
-        cell_image = ImageGrab.grab(box)
-        outcome = define_cell(cell_image)
-        if outcome == MARK_SIGNATURE:
+        # Проверка.
+        if self.check(game_y, game_x) == MARK_SIGNATURE:
             # Клетка была успешно помечена.
             return True
         else:
             raise RuntimeError('Не удалось пометить клетку %d, %d.' % (game_x+1, game_y+1))
+
+    # Возвращает то, что находится в данной клетке.
+    def check(self, game_y, game_x):
+        y, x = self.game_coordinates_to_screen(game_y, game_x)
+        # Снимок клетки для проверки.
+        box = x, y, x + CELL_SIZE, y + CELL_SIZE
+        cell_image = ImageGrab.grab(box)
+        return define_cell(cell_image)
 
 
 # Вспомогательный класс, необходимый для получения данных об окне.

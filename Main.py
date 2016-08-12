@@ -17,7 +17,6 @@ try:
     bot = Bot(field)
     bot.solve()
 except General.MineOpened:
-    logging.debug('Поле:\n' + str(field))
     print('Oops, a mine was opened =(')
     logging.info('Проигрыш.')
 except General.Victory:
@@ -27,4 +26,5 @@ except Exception as ex:
     logging.exception(ex)
     raise ex
 finally:
+    logging.debug(str(field))
     logging.info('Завершение.\n')
