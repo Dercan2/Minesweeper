@@ -24,3 +24,7 @@ class MineOpened(Exception):
 # Были определены все клетки.
 class Victory(Exception):
     pass
+
+
+class FailToDefineCell(Exception):
+    pass

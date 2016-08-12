@@ -3,7 +3,7 @@ import time
 import logging
 from ctypes import Structure, wintypes, byref, windll
 from PIL import ImageGrab
-from General import MINE_SIGNATURE, MARK_SIGNATURE, CLOSED_SIGNATURE
+from General import MINE_SIGNATURE, MARK_SIGNATURE, CLOSED_SIGNATURE, FailToDefineCell
 from Colors import Color
 import Colors
 
@@ -230,7 +230,7 @@ def define_cell(image):
             return CLOSED_SIGNATURE
         else:
             image.save('Fail to define cell.png')
-            raise RuntimeError('Клетка закрыта и не удалось распознать ее.')
+            raise FailToDefineCell('Клетка закрыта и не удалось распознать ее.')
 
     # Клетка открыта, определяем цифру на ней.
     # 9, 12 - особая точка, с помощью которой можно определить цифру от 0 до 8
@@ -239,7 +239,7 @@ def define_cell(image):
         return Colors.ColorToDigitMap[color]
     else:
         image.save('Fail to define cell.png')
-        raise RuntimeError('Клетка открыта, но не удалось распознать ее.')
+        raise FailToDefineCell('Клетка открыта, но не удалось распознать ее.')
 
 
 def define_mines_amount(image):

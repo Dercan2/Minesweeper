@@ -7,6 +7,8 @@ from Cell import open_cells, mark_cells
 
 
 class Bot:
+    name = 'Bot T2 fast'
+
     def __init__(self, game_field):
         self.field = game_field
 
