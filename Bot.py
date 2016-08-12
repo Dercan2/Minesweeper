@@ -7,6 +7,8 @@ from Cell import open_cells, mark_cells
 
 
 class Bot:
+    name = 'Bot T2 fast'
+
     def __init__(self, game_field):
         self.field = game_field
 
@@ -14,7 +16,7 @@ class Bot:
 
     # Открывает случайную клетку.
     def random_open(self):
-        if self.field.unclear_cells_counter == 0:
+        if self.field.blanks_amount == 0:
             raise Victory
         while True:
             x = random.randint(0, self.field.width - 1)
@@ -40,15 +42,12 @@ class Bot:
                 cell.considered = False
                 self.to_consider |= {cell}
 
-    def action(self):
-        if self.field.unclear_cells_counter == 0:
-            raise Victory
-        while self.consider_tokens_by_one() or self.consider_tokens_by_two():
-            pass
-        if self.field.unclear_cells_counter == 0:
-            raise Victory
-        self.random_open()
-        if self.field.unclear_cells_counter == 0:
+    def solve(self):
+        while self.field.blanks_amount != 0:
+            while self.consider_tokens_by_one() or self.consider_tokens_by_two():
+                pass
+            self.random_open()
+        else:
             raise Victory
 
     # Рассматривает токены по одному и пытается разрешить статусы клеток.
@@ -79,7 +78,9 @@ def check_token(token):
         mark_cells(token.cells)
     # Не осталось мин.
     elif token.mines_amount == 0:
-        open_cells(token.cells)
+        token.creator.open_around()
+        # Старый способ.
+        # open_cells(token.cells)
     # Проверка данного токена ничего не дала.
     else:
         return False
@@ -120,5 +121,5 @@ def check_2_tokens(token1, token2):
     if len(difference) == token_more_blanks.blanks_amount - token_less_blanks.blanks_amount != 0:
         open_cells(difference)
         result = True
-        logging.debug('При рассмотрении двух токенов нашлись свободные клетки..')
+        logging.debug('При рассмотрении двух токенов нашлись свободные клетки.')
     return result
